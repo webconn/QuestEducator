@@ -1,0 +1,10 @@
+ul.subtopics li.topic-actual {
+        background: url("/icn/actual.png") no-repeat 2px 2px;
+        padding-left: 20px;
+}
+
+ul.subtopics li.topic-unavailable {
+        background: url("/icn/locked.png") no-repeat 2px 2px;
+        padding-left: 20px;
+        color: #9AA2AB;
+}

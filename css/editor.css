@@ -1,0 +1,67 @@
+table#pagelist {
+        width: 100%;
+        border: 1px solid black;
+        border-collapse: collapse;
+}
+
+table#pagelist th {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 3px;
+        border: 2px solid black;
+}
+
+table#pagelist td {
+        border: 1px solid black;
+        padding: 3px;
+}
+
+table#pagelist tr.odd {
+        background-color: rgba(200, 200, 200, 0.5);
+}
+
+table#pagelist tr.even {
+        background-color: rgba(230, 230, 230, 0.5);
+}
+
+table#pagelist .pageid {
+        width: 50px;
+        text-align: center;
+}
+
+table#pagelist .links {
+        width: 300px;
+}
+
+table#pagelist .title {
+        
+}
+
+a.delete {
+        padding-left: 20px;
+        background: url("/icn/delete.png") no-repeat 2px 2px;
+}
+
+a.edit {
+        padding-left: 20px;
+        background: url("/icn/edit.png") no-repeat 2px 2px;
+}
+
+a.newpage {
+        display: block;
+        padding-left: 20px;
+        margin-bottom: 10px;
+        margin-left: 5px;
+        background: url("/icn/new.png") no-repeat 2px 2px;
+}
+
+a.topics {
+        display: block;
+        padding-left: 20px;
+        margin-bottom: 10px;
+        margin-left: 5px;
+        background: url("/icn/topics.png") no-repeat 2px 2px;
+}
+
+form.edit-topic label{
+        display: block;
+}

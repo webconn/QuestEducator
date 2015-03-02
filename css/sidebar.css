@@ -1,0 +1,59 @@
+div#sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        
+        min-height: 100%;
+        width: 100px;
+
+        background: rgba(255, 255, 255, 0.5);
+}
+
+div#sidebar ul {
+        padding: 0;
+        margin: 0;
+}
+
+div#sidebar ul.top {
+        display: block;
+}
+
+div#sidebar ul.bottom {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+}
+
+div#sidebar ul li {
+        display: block;
+        margin: 0;
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.5);
+        text-align: center;
+        vertical-align: middle;
+        padding: 5px;
+}
+
+div#sidebar ul li:hover {
+        background: rgba(255, 255, 255, 0.8);
+}
+
+div#sidebar ul li img {
+        display: block;
+        margin: 0 auto;
+        border: 0;
+}
+
+div#sidebar ul li a {
+        text-decoration: none;
+        color: #00002C;
+}
+
+div#sidebar ul li.active {
+        background: rgba(100, 255, 128, 0.7);
+}
+
+div#sidebar ul li.active:hover {
+        background: rgba(255, 255, 255, 0.9);
+}
