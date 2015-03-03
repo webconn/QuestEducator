@@ -16,14 +16,17 @@ class Task {
         public $name = "";
 
         public function __construct($id) {
+                $id = intval($id);
+
                 $this->db = Database::getInstance();
                 $this->id = $id;
 
-                $q = "SELECT `name`, `level`, `topic`, `page` FROM `tasks` WHERE `id`=" . $this->db->escape_string($id) . ";";
+                $q = "SELECT `name`, `level`, `topic`, `page` FROM `tasks` WHERE `id`=" . $id . ";";
                 $result = $this->db->query($q);
 
                 if (!$result) throw new DatabaseException($this->db->error, $q);
-                if ($result->num_rows == 0) throw new PageException(404);
+                if (!$result->num_rows) throw new DatabaseException($this->db->error, $q);
+                //if ($result->num_rows == 0) throw new PageException(404);
                 $result = $result->fetch_array(MYSQLI_ASSOC);
 
                 $this->level = $result["level"];

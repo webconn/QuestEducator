@@ -34,6 +34,7 @@
                 <link rel="stylesheet" type="text/css" href="css/pages.css" />
                 <link rel="stylesheet" type="text/css" href="css/sidebar.css" />
                 <link rel="stylesheet" type="text/css" href="css/tasks.css" />
+                <?php echo $pages->head; ?>
         </head>
         <body>
                 <div id="sidebar">

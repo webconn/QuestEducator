@@ -27,6 +27,8 @@ class Pages {
 
         private $db = null;
         private $user = null;
+        
+        public $head = "";
 
         public function __construct() {
                 $this->db = Database::getInstance();
@@ -43,6 +45,8 @@ class Pages {
                                 return $this->getTopic($get["id"]);
                         case "task":
                                 return $this->getTask($get["id"]);
+                        case "accept":
+                                return $this->acceptTask();
                         default:
                                 throw new PageException(404);
                 }
@@ -100,6 +104,8 @@ class Pages {
                                 return "Просмотр темы";
                         case "task":
                                 return "Задача";
+                        case "accept":
+                                return "Принятие задачи";
                         default:
                                 throw new PageException(404);
                 }
@@ -142,10 +148,85 @@ class Pages {
 
         public function getTask($id) {
                 $task = new Task($id);
+                
+                if ($_GET["waiting"] == "1") {
+                        $this->head .= "<style type=\"text/css\">div#content { background-color: rgba(50, 255, 50, 0.7) !important; }</style>";
+                        
+                        $q = "SELECT `id` FROM `accepts` WHERE `uid`=";
+                        $q .= $this->user->getUID() . " AND `task_id`=";
+                        $q .= $this->db->escape_string($id) . ";";
 
+                        $res = $this->db->query($q);
+                        if (!$res) throw new DatabaseException($this->db->error, $q);
+
+                        if ($res->num_rows == 0) {
+                                $q = "INSERT INTO `accepts` (`uid`, `task_id`, `accept`) VALUES (";
+                                $q .= $this->user->getUID() . ", ";
+                                $q .= $this->db->escape_string($id) . ", ";
+                                $q .= rand(100, 999) . ");";
+
+                                if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+                        }
+                }
+                
                 $out = $this->getPageByID($task->page);
 
+                $out .= "<div id=\"waiter\">";
+                if ($_GET["waiting"] == "1") {
+                        $out .= "<form action=\"/manager.php\" method=\"get\">";
+                        $out .= "<input type=\"hidden\" name=\"act\" value=\"accept\" />";
+                        $out .= "<input type=\"hidden\" name=\"id\" value=\"" . $id . "\" />";
+                        $out .= "<input type=\"text\" name=\"code\" class=\"accept-code\" />";
+                        $out .= "<input type=\"submit\" value=\"Подтвердить\" />";
+                        $out .= "</form>";
+                } else {
+                        $out .= "<a href=\"/manager.php?act=task&id=" . $id . "&waiting=1\">Задание завершено</a>";
+                }
+                $out .= "</div>";
+
                 return $out;
+        }
+
+        public function acceptTask() {
+                $code = $_GET["code"];
+                
+                $q = "SELECT `id` FROM `accepts` WHERE ";
+                $q .= "`accept`=" . $this->db->escape_string($_GET["code"]) . " AND ";
+                $q .= "`uid`=" . $this->user->getUID() . " AND ";
+                $q .= "`task_id`=" . $this->db->escape_string($_GET["id"]) . ";";
+
+                $res = $this->db->query($q);
+                if (!$res) throw new DatabaseException($this->db->error, $q);
+
+                if ($res->num_rows == 0) {
+                        return "Неправильный код подтверждения. <a href=\"/manager.php?act=task&id=" . $_GET["id"] . "&waiting=1&retry=1\">Вернуться</a>";
+                } else {
+                        $q = "DELETE FROM `accepts` WHERE `id`=" . $res->fetch_array(MYSQLI_ASSOC)["id"] . ";";
+                        if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+
+                        $q = "SELECT `id` FROM `progress` WHERE `uid`=";
+                        $q .= $this->user->getUID() . " AND `task_id`=";
+                        $q .= $this->db->escape_string($_GET["id"]) . ";";
+
+                        $res = $this->db->query($q);
+                        if (!$res) throw new DatabaseException($this->db->error, $q);
+
+                        $task = new Task($_GET["id"]);
+
+                        if ($res->num_rows == 0) {
+                                $q = "INSERT INTO `progress` (`uid`, `task_id`, `result`) VALUES (";
+                                $q .= $this->user->getUID() . ", ";
+                                $q .= $this->db->escape_string($_GET["id"]) . ", ";
+                                $q .= $task->level . ");";
+                        } else {
+                                $q = "UPDATE `progress` SET `result`=";
+                                $q .= $task->level . " WHERE `id`=" . $res->fetch_array(MYSQLI_ASSOC)["id"] . ";";
+                        }
+
+                        if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+
+                        return "Задача подтверждена. <a href=\"/manager.php?act=topic\">Вернуться к задачам</a>";
+                }
         }
 
 }

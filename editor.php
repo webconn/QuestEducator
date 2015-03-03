@@ -40,14 +40,17 @@
                 case "":
                 case "select":
                         $title = "Выбор страницы для редактирования";
-                        $content = "<a href=\"/editor.php?act=topics\" class=\"topics\">Перейти в редактор тем</a>";
+                        $content = "<p class=\"edit-category\"><a href=\"/editor.php?act=topics\" class=\"topics\">Перейти в редактор тем</a>";
+                        $content .= "<a href=\"/editor.php?act=tasks\" class=\"tasks\">Перейти в редактор заданий</a></p>";
                         $content .= "<a href=\"/editor.php?act=new\" class=\"newpage\">Создать новую страницу</a>";
                         $content .= $editor->pagesList();
                         break;
 
                 case "topics":
                         $title = "Выбор темы для редактирования";
-                        $content = "<a href=\"/editor.php?act=new-topic\" class=\"newpage\">Создать новую тему</a>";
+                        $content = "<p class=\"edit-category\"><a href=\"/editor.php?act=select\" class=\"pages\">Перейти в редактор страниц</a>";
+                        $content .= "<a href=\"/editor.php?act=tasks\" class=\"tasks\">Перейти в редактор заданий</a></p>";
+                        $content .= "<a href=\"/editor.php?act=new-topic\" class=\"newpage\">Создать новую тему</a>";
                         $content .= $editor->topicsList();
                         break;
 
@@ -75,6 +78,39 @@
                         $title = "Сохранение темы";
                         $content = $editor->topicUpdate($_POST);
                         break;
+
+                case "tasks":
+                        $title = "Выбор задания для редактирования";
+                        $content = "<p class=\"edit-category\"><a href=\"/editor.php?act=select\" class=\"pages\">Перейти в редактор страниц</a>";
+                        $content .= "<a href=\"/editor.php?act=topics\" class=\"topics\">Перейти в редактор тем</a></p>";
+                        $content .= $editor->tasksList($_GET["topic"]);
+                        break;
+
+                case "new-task":
+                        $title = "Создание нового задания";
+                        $content = $editor->newTask();
+                        break;
+
+                case "edit-task":
+                        $title = "Редактирование задания";
+                        $content = $editor->editTask($_GET["id"]);
+                        break;
+
+                case "update-task":
+                        $title = "Сохранение темы";
+                        $content = $editor->updateTask($_POST);
+                        break;
+
+                case "save-task":
+                        $title = "Сохранение темы";
+                        $content = $editor->saveTask($_POST);
+                        break;
+
+                case "delete-task":
+                        $title = "Удаление задания";
+                        $content = $editor->deleteTask($_GET);
+                        break;
+
 
                 default:
                         $content = "Страница не найдена (404)";

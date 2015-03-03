@@ -109,7 +109,12 @@ selector: "textarea",
         "searchreplace visualblocks code fullscreen",
         "insertdatetime media table contextmenu paste"
     ],
-    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+
+    formats: {
+        code_block : { block : 'div', attributes : { title : "Source code" }, classes : 'code-block' }
+    },
+    
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image code_block",
 
 
 setup: function(ed) {
@@ -157,14 +162,17 @@ SCRIPT;
         }
 
         public function pagesSelector($name, $value) {
-                $ret = "<select name=\"" . $name . "\" value=\"" . $value . "\">";
+                $ret = "<select name=\"" . $name . "\">";
                 
                 $q = "SELECT `id`, `title` FROM `pages`;";
                 $res = $this->db->query($q);
                 if (!$res) throw new DatabaseException($this->db->error, $q);
 
                 while ($a = $res->fetch_array(MYSQLI_ASSOC)) {
-                        $ret .= "<option value=\"" . $a["id"] . "\">" . $a["id"] . " -> " . $a["title"] . "</option>";
+                        $ret .= "<option value=\"" . $a["id"] . "\"";
+                        if ($a["id"] == $value)
+                                $ret .= " selected";
+                        $ret .= ">" . $a["id"] . " -> " . $a["title"] . "</option>";
                 }
 
                 $ret .= "</select>";
@@ -220,25 +228,28 @@ SCRIPT;
         }
 
         public function topicSelector($name, $value) {
-                $ret = "<select name=\"" . $name . "\" value=\"" . $value . "\">";
+                $ret = "<select name=\"" . $name . "\">";
 
-                $ret .= $this->_getSubTopicsSelector(0, "");
+                $ret .= $this->_getSubTopicsSelector(0, "", $value);
 
                 $ret .= "</select>";
 
                 return $ret;
         }
 
-        private function _getSubTopicsSelector($id, $prefix) {
+        private function _getSubTopicsSelector($id, $prefix, $value) {
                 $topic = new Topic($id);
 
-                $ret = "<option value=\"" . $id . "\">" . $prefix . $topic->name . "</option>";
+                $ret = "<option value=\"" . $id . "\"";
+                if ($value == $id)
+                        $ret .= " selected";
+                $ret .= ">" . $prefix . $topic->name . "</option>";
 
                 $subs = $topic->getSubTopics();
 
                 if (count($subs) != 0) {
                         foreach ($subs as $s) {
-                                $ret .= $this->_getSubTopicsSelector($s->id, $prefix . "&nbsp;&nbsp;");
+                                $ret .= $this->_getSubTopicsSelector($s->id, $prefix . "&nbsp;&nbsp;", $value);
                         }
                 }
 
@@ -289,6 +300,139 @@ SCRIPT;
                 if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
                 
                 return "Тема успешно сохранена. <a href=\"/editor.php?act=topics\">Вернуться в редактор</a>";
+        }
+
+        public function tasksList($topic) {
+                $ret = "";
+                $ret .= "<a href=\"/editor.php?act=new-task\" class=\"newpage\">Создать новое задание</a>";
+                $ret .= "<form action=\"/editor.php\" method=\"get\" class=\"topic-selector\">";
+                $ret .= "<input type=\"hidden\" name=\"act\" value=\"tasks\" />";
+                $ret .= $this->topicSelector("topic", $topic);
+                $ret .= "<input type=\"submit\" value=\"Выбрать тему\" />";
+                $ret .= "</form>";
+
+                $q = "SELECT `id`, `name`, `topic` FROM `tasks`";
+
+                if ($topic != 0)
+                        $q .= "WHERE `topic`=" . $this->db->escape_string($topic) . ";";
+                else
+                        $q .= ";";
+
+                $res = $this->db->query($q);
+                if (!$res) throw new DatabaseException($this->db->error, $q);
+
+                if ($res->num_rows != 0) {
+        
+                        $ret .= "<table id=\"tasklist\">";
+                        $ret .= "<tr><th class=\"id\">ID</th><th class=\"name\">Имя задания</th><th class=\"topic\">Тема</th><th class=\"actions\">Действия</th></tr>";
+
+                        $even = 0;
+
+                        while ($row = $res->fetch_array(MYSQLI_ASSOC)) {
+                                $ret .= "<tr class=\"" . ($even ? "even" : "odd" ) . "\">";
+                                $ret .= "<td class=\"id\">" . $row["id"] . "</td>";
+                                $ret .= "<td class=\"name\"><a href=\"/editor.php?act=edit-task&id=" . $row["id"] . "\">";
+                                $ret .= $row["name"] . "</a></td>";
+                                $ret .= "<td class=\"topic\">" . $row["topic"] . "</td>";
+                                $ret .= "<td class=\"actions\">";
+                                $ret .= "<a href=\"/editor.php?act=edit-task&id=" . $row["id"] . "\" class=\"edit\">Редактировать</a>";
+                                $ret .= "<a href=\"/editor.php?act=delete-task&id=" . $row["id"] . "\" class=\"delete\">Удалить</a>";
+                                $ret .= "</td></tr>";
+
+                                $even = !$even;
+                        }
+
+                        $ret .= "</table>";
+                }
+
+                return $ret;
+        }
+
+        public function newTask() {
+                return $this->taskEditForm("new");
+        }
+
+        public function editTask($id) {
+                return $this->taskEditForm("edit", $id);
+        }
+
+        public function taskEditForm($act, $id=0) {
+
+                $ret = "<form action=\"/editor.php?act=";
+                $task = null;
+
+                if ($act == "edit") {
+                        $ret .= "update-task";
+                        $task = new Task($id);
+                } else {
+                        $ret .= "save-task";
+                }
+
+                $ret .= "\" method=\"post\" class=\"task-edit\">";
+
+                if ($act == "edit") {
+                        $ret .= "<input type=\"hidden\" name=\"id\" value=\"" . $id . "\" />";
+                }
+
+                $ret .= "<label for=\"name\">Имя задания: <input type=\"text\" name=\"name\" value=\"";
+                $ret .= ($act == "edit" ? $task->name : "");
+                $ret .= "\" /></label>";
+
+                $ret .= "<label for=\"level\">Уровень задания: <input type=\"text\" name=\"level\" value=\"";
+                $ret .= ($act == "edit" ? $task->level : "");
+                $ret .= "\" /></label>";
+
+                $ret .= "<label for=\"topic\">Тема: ";
+                $ret .= $this->topicSelector("topic", $act == "edit" ? $task->topic : 0);
+                $ret .= "</label>";
+
+                $ret .= "<label for=\"page\">Страница: ";
+                $ret .= $this->pagesSelector("page", $act == "edit" ? $task->page : 0);
+                $ret .= "</label>";
+
+                $ret .= "<input type=\"submit\" value=\"Сохранить\" />";
+                $ret .= "<a href=\"/editor.php?act=tasks\">Вернуться в редактор</a>";
+
+                $ret .= "</form>";
+
+                return $ret;
+        }
+
+        public function updateTask($post) {
+                $q = "UPDATE `tasks` SET";
+                $q .= "`name`=\"" . $this->db->escape_string($post["name"]) . "\", ";
+                $q .= "`level`=" . $this->db->escape_string($post["level"]) . ", ";
+                $q .= "`topic`=" . $this->db->escape_string($post["topic"]) . ", ";
+                $q .= "`page`=" . $this->db->escape_string($post["page"]);
+                $q .= " WHERE `id`=" . $this->db->escape_string($post["id"]) . ";";
+
+                if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+
+                return "Задание успешно обновлено. <a href=\"/editor.php?act=tasks\">Вернуться в редактор</a>";
+        }
+
+        public function saveTask($post) {
+                $q = "INSERT INTO `tasks` (`name`, `level`, `topic`, `page`) VALUES (";
+                $q .= "\"" . $this->db->escape_string($post["name"]) . "\", ";
+                $q .= $this->db->escape_string($post["level"]) . ", ";
+                $q .= $this->db->escape_string($post["topic"]) . ", ";
+                $q .= $this->db->escape_string($post["page"]) . ");";
+
+                if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+
+                return "Задание успешно сохранено. <a href=\"/editor.php?act=tasks\">Вернуться в редактор</a>";
+        }
+
+        public function deleteTask($get) {
+                if ($get["confirm"] == "y") {
+                        $q = "DELETE FROM `tasks` WHERE `id`=" . $this->db->escape_string($get["id"]) . ";";
+                        if (!$this->db->query($q)) throw new DatabaseException($this->db->error, $q);
+                        return "Задание успешно удалено. <a href=\"/editor.php?act=tasks\">Вернуться в редактор</a>";
+                } else {
+                        $ret = "<p class=\"confirmer\">Вы действительно хотите удалить задание " . $get["id"] . "?</p>";
+                        $ret .= "<p class=\"confirmer-choose\"><a href=\"/editor.php?act=delete-task&id=" . $get["id"] . "&confirm=y\">Да</a> <a href=\"/editor.php?act=tasks\">Нет</a></p>";
+                        return $ret;
+                }
         }
 
 };

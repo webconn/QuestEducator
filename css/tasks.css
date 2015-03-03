@@ -8,3 +8,34 @@ ul.subtopics li.topic-unavailable {
         padding-left: 20px;
         color: #9AA2AB;
 }
+
+div#waiter a {
+        display: block;
+        background: rgba(14, 172, 0, 0.8) url("/img/accept.png") no-repeat 2px 2px;
+        height: 44px;
+        padding-left: 70px;
+        padding-top: 25px;
+        width: 200px;
+        color: white;
+        font-weight: 900;
+        box-shadow: black 0 0 5px;
+        text-decoration: none;
+        border-radius: 5px;
+}
+
+div#waiter a:hover {
+        box-shadow: black 0 0 10px;
+}
+
+code {
+        display: block;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 5px;
+
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+}

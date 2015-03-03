@@ -36,6 +36,16 @@ table#pagelist .title {
         
 }
 
+p.edit-category {
+        margin-bottom: 5px;
+        padding-left: 5px;
+}
+
+p.edit-category a {
+        padding-left: 20px;
+        padding-right: 10px;
+}
+
 a.delete {
         padding-left: 20px;
         background: url("/icn/delete.png") no-repeat 2px 2px;
@@ -55,13 +65,52 @@ a.newpage {
 }
 
 a.topics {
-        display: block;
-        padding-left: 20px;
-        margin-bottom: 10px;
-        margin-left: 5px;
         background: url("/icn/topics.png") no-repeat 2px 2px;
 }
 
-form.edit-topic label{
+a.pages {
+        background: url("/icn/pages.png") no-repeat 2px 2px;
+}
+
+a.tasks {
+        background: url("/icn/tasks.png") no-repeat 2px 2px;
+}
+
+form label{
         display: block;
 }
+
+table#tasklist {
+        width: 100%;
+        border: 1px solid black;
+        border-collapse: collapse;
+}
+
+table#tasklist th {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 3px;
+        border: 2px solid black;
+}
+
+table#tasklist td {
+        border: 1px solid black;
+        padding: 3px;
+}
+
+table#tasklist tr.odd {
+        background-color: rgba(200, 200, 200, 0.5);
+}
+
+table#tasklist tr.even {
+        background-color: rgba(230, 230, 230, 0.5);
+}
+
+table#tasklist .id {
+        width: 50px;
+        text-align: center;
+}
+
+table#tasklist .actions {
+        width: 300px;
+}
+
